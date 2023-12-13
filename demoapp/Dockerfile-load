@@ -1,0 +1,36 @@
+# Використовуємо офіційний образ Golang для збірки
+FROM golang:latest AS builder
+
+# Встановлюємо додаткові залежності, які необхідні для проекту
+RUN apt-get update && apt-get install -y \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Встановлюємо робочу директорію контейнера
+WORKDIR /load
+
+# Копіюємо файл go.mod та go.sum у контейнер
+COPY go.mod .
+COPY go.sum .
+
+# Виконуємо команду для завантаження залежностей проекту
+RUN go mod download
+
+# Копіюємо весь внутрішній код проекту у контейнер
+COPY . .
+
+# Компілюємо проект та створюємо виконуваний файл
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /demoapp ./cmd/load
+
+
+# Використовуємо мінімальний образ Alpine для запуску додатку
+FROM alpine:latest
+
+# Встановлюємо порт, на якому буде працювати додаток
+EXPOSE 8080
+
+# Копіюємо виконуваний файл з попереднього етапу у кінцевий образ
+COPY --from=builder /demoapp /
+
+# Запускаємо додаток при старті контейнера
+CMD ["/demoapp"]

@@ -1,0 +1,128 @@
+# setting up a local environment variable
+env:
+  flush_interval: 1
+  http_addr: 0.0.0.0
+  http_port: 2020
+
+# service configuration
+service:
+  flush: ${flush_interval}
+  log_level: info
+  http_server: "on"
+  http_listen: ${http_addr}
+  http_port: ${http_port}
+  parsers_file: /config/parsers.conf
+
+pipeline:
+  inputs:
+    - name: http
+      listen: 0.0.0.0
+      port: 9880
+      buffer_max_size: 4M
+      buffer_chunk_size: 512K
+      successful_response_code: 201
+    
+    - name: tail
+      path: /logs/traefik.log
+      path_key: filepath
+      skip_empty_lines: true
+      tag: traefik_logs
+
+    - name: tail
+      path: /logs/traefik_access.log
+      path_key: filepath
+      skip_empty_lines: true
+      tag: traefik_access_logs
+
+    - name: opentelemetry
+      raw_traces: false
+      listen: 0.0.0.0
+      port: 4318
+      buffer_max_size: 4M
+      buffer_chunk_size: 512K
+      successful_response_code: 201
+      # Fluent Bit will listen on port 4318 for data.
+      # You can now send telemetry data to the endpoints
+      # /v1/metrics
+      # /v1/traces
+      # /v1/logs
+
+  filters:
+    - name: expect
+      match: "*"
+      key_val_is_not_null: traceId
+      action: result_key
+   
+    - name: expect
+      match: "*"
+      key_val_is_not_null: sessionId
+      action: result_key
+
+    - name: modify
+      match: "*"
+      rename: timestamp time
+
+    - name: modify
+      match: "minio*"
+      add: service minio
+
+    - name: modify
+      match: "svc.*"
+      add: service api
+
+    - name: modify
+      match: "traefik_logs"
+      add: node metrics
+    
+    - name: modify
+      match: "traefik_logs"
+      add: service traefik
+    
+    - name: modify
+      match: "traefik_access_logs"
+      add: service traefik
+
+    - name: modify
+      match: "traefik_access_logs"
+      add: node metrics
+    
+    - name: modify
+      match: "traefik_access_logs"
+      add: accesslog true
+
+    
+    - name: parser
+      match: traefik_logs
+      key_name: log
+      parser: json
+      preserve_key: true
+      reserve_data: true
+
+    - name: parser
+      match: traefik_access_logs
+      key_name: log
+      parser: json
+      preserve_key: true
+      reserve_data: true
+
+  outputs:
+    # - name: stdout
+    #   match: "*"
+
+    - name: loki
+      match: "*"
+      host: loki
+      labels: job=docker-host
+      port: 3100
+      line_format: json
+
+    - name: opentelemetry
+      match: opentelemetry*
+      host: tempo 
+      port: 4318
+      # metrics_uri: "/"
+      # logs_uri: "/"
+      # traces_uri: "/"
+      http_user: ""
+      http_Passwd: "" 
+      log_response_payload: true

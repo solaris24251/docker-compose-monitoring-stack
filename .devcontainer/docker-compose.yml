@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+
+  app:
+    build:
+      context: ../demoapp # шлях до директорії з проектом
+      dockerfile: ./Dockerfile # шлях до файлу Dockerfile
+    logging:
+      driver: json-file
+      options:
+        max-size: '10m'
+        max-file: '10'
+        labels: 'production_status'
+    labels:
+      production_status: 'development'
+    ports:
+      - 8888:8080
+    environment:
+      - HTTP_REQUESTS_INFLIGHT_MAX
+      - HTTP_REQUESTS_SUCCESSFUL_MAX
+      - HTTP_REQUESTS_ERROR_MAX
+    networks:
+      - local
+      - metrics
+
+  app-load:
+    build:
+      context: ../demoapp # шлях до директорії з проектом
+      dockerfile: ./Dockerfile-load # шлях до файлу Dockerfile
+    networks:
+      - local
+
+networks:
+  local:
+  metrics:
+    name: metrics_metrics
+    external: true

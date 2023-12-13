@@ -1,0 +1,239 @@
+version: '3.2'
+
+networks:
+  metrics:
+  local:
+    name: devcontainer_local
+    external: true
+
+volumes:
+  buckets:
+  grafana-storage:
+  logs:
+
+services:
+  fluentbit:
+    container_name: logsvc 
+    hostname: logsvc
+    image: fluent/fluent-bit:2.1.7
+    networks:
+      - metrics
+    ports:
+      - 9880:9880
+      - 4318:4318
+    volumes:
+      - "./fluent:/config"
+      - logs:/logs
+    command: 
+      - "-c"
+      - "/config/fluent.yml"
+    labels:
+    - "traefik.enable=true"
+    - "traefik.http.routers.logsvc.rule=Host(`logs.metrics.isvc`)"
+    - "traefik.http.routers.logsvc.entrypoints=web,websecure"
+    - "traefik.http.routers.logsvc.tls=true"
+    - "traefik.http.routers.logsvc.middlewares=ratelimit@docker"
+    - "traefik.http.routers.logsvc.service=logsvc@docker"
+
+    - "traefik.http.services.logsvc.loadBalancer.server.port=9880"
+    - "traefik.http.services.logsvc.loadBalancer.server.scheme=http"
+    - "traefik.http.services.logsvc.loadbalancer.healthcheck.followredirects=true"
+    - "traefik.http.services.logsvc.loadbalancer.healthcheck.interval=60s"
+    - "traefik.http.services.logsvc.loadbalancer.healthcheck.path=/api/v1/health"
+    - "traefik.http.services.logsvc.loadbalancer.healthcheck.method=foobar"
+    - "traefik.http.services.logsvc.loadbalancer.healthcheck.port=2020"
+    - "traefik.http.services.logsvc.loadbalancer.healthcheck.scheme=http"
+    - "traefik.http.services.logsvc.loadbalancer.healthcheck.timeout=5s"
+
+    - "traefik.http.routers.logsvc_otel.rule=Host(`otel.metrics.isvc`)"
+    - "traefik.http.routers.logsvc_otel.entrypoints=web,websecure"
+    - "traefik.http.routers.logsvc_otel.tls=true"
+    - "traefik.http.routers.logsvc_otel.middlewares=ratelimit@docker"
+    - "traefik.http.routers.logsvc_otel.service=logsvc_otel@docker"
+    - "traefik.http.services.logsvc_otel.loadBalancer.server.port=4318"
+    - "traefik.http.services.logsvc_otel.loadBalancer.server.scheme=http"
+
+
+  traefik:
+    image: "traefik:v2.10"
+    container_name: "traefik"
+    hostname: "traefik"
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - metrics
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./traefik/traefik.yml:/traefik.yml:ro"
+      - logs:/logs
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik.rule=Host(`tr.metrics.isvc`)"
+      - "traefik.http.routers.traefik.entrypoints=web,websecure"
+      - "traefik.http.routers.traefik.tls=true"
+      - "traefik.http.routers.traefik.service=api@internal"
+
+      - "traefik.http.middlewares.ratelimit.ratelimit.average=100"
+      - "traefik.http.middlewares.ratelimit.ratelimit.burst=50"
+      - "traefik.http.middlewares.ratelimit.ratelimit.period=1m"
+
+  grafana:
+    container_name: grafana 
+    hostname: grafana
+    image: grafana/grafana:9.4.3
+    networks:
+      - metrics
+    volumes:
+      - ./grafana:/etc/grafana/provisioning/datasources
+      - grafana-storage:/var/lib/grafana
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+      - GF_FEATURE_TOGGLES_ENABLE=traceqlEditor
+      - GF_INSTALL_PLUGINS=grafana-piechart-panel
+    ports:
+      - 3000:3000
+    labels:
+    - "traefik.enable=true"
+    - "traefik.http.routers.grafana.rule=Host(`grafana.metrics.isvc`)"
+    - "traefik.http.routers.grafana.entrypoints=web,websecure"
+    - "traefik.http.routers.grafana.tls=true"
+    - "traefik.http.routers.grafana.service=grafana@docker"
+    - "traefik.http.services.grafana.loadBalancer.server.port=3000"
+    - "traefik.http.services.grafana.loadBalancer.server.scheme=http"
+
+  loki:
+    image: grafana/loki:2.8.0
+    container_name: loki
+    hostname: loki
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./loki/:/etc/loki/
+    networks:
+      - metrics
+    command: -config.file=/etc/loki/config.yml
+    labels:
+    - "traefik.enable=true" # Diasbled
+    - "traefik.http.routers.loki.rule=Host(`loki.metrics.isvc`)"
+    - "traefik.http.routers.loki.entrypoints=web,websecure"
+    - "traefik.http.routers.loki.tls=true"
+    - "traefik.http.routers.loki.service=loki@docker"
+    - "traefik.http.services.loki.loadBalancer.server.port=3100"
+    
+  
+  prometheus:
+    container_name: prometheus 
+    hostname: prometheus
+    image: prom/prometheus:latest
+    networks:
+      - metrics
+      - local
+    command:
+      - --config.file=/etc/prometheus.yml
+      - --web.enable-remote-write-receiver
+      - --enable-feature=exemplar-storage
+    volumes:
+      - ./prom/prometheus.yml:/etc/prometheus.yml
+    ports:
+      - 9090:9090
+    labels:
+    - "traefik.enable=true"
+    - "traefik.http.routers.prometheus.rule=Host(`prometheus.metrics.isvc`)"
+    - "traefik.http.routers.prometheus.entrypoints=web,websecure"
+    - "traefik.http.routers.prometheus.tls=true"
+    - "traefik.http.routers.prometheus.service=prometheus@docker"
+    - "traefik.http.services.prometheus.loadBalancer.server.port=9090"
+
+  tempo:
+    container_name: tempo
+    hostname: tempo
+    image: grafana/tempo:latest
+    command: "-target=scalable-single-binary -config.file=/etc/tempo.yaml"
+    volumes:
+      - ./tempo/tempo.yml:/etc/tempo.yaml
+    restart: always
+    networks:
+      - metrics
+    depends_on:
+      - minio
+    ports:
+      - 3200:3200
+    labels:
+    - "traefik.enable=true" # Diasbled
+    - "traefik.http.routers.tempo.rule=Host(`tempo.metrics.isvc`)"
+    - "traefik.http.routers.tempo.entrypoints=web,websecure"
+    - "traefik.http.routers.tempo.tls=true"
+    - "traefik.http.routers.tempo.service=tempo@docker"
+    - "traefik.http.services.tempo.loadBalancer.server.port=3200"
+
+  minio: # Temporary
+    container_name: minio 
+    hostname: minio
+    image: minio/minio:latest
+    networks:
+      - metrics
+    environment:
+      - MINIO_ACCESS_KEY=tempo
+      - MINIO_SECRET_KEY=supersecret
+      - "MINIO_AUDIT_WEBHOOK_ENABLE_LOGGER=on"
+      - "MINIO_AUDIT_WEBHOOK_ENDPOINT_LOGGER=http://logsvc:9880/minio_audit.log"
+      - "MINIO_LOGGER_WEBHOOK_ENABLE__LOGGER=on"
+      - "MINIO_LOGGER_WEBHOOK_ENDPOINT__LOGGER=http://logsvc:9880/minio.log"
+    volumes:
+      - buckets:/data
+    entrypoint:
+      - sh
+      - -euc
+      - mkdir -p /data/tempo && mkdir -p /data/loki-data && mkdir -p /data/loki-ruler && /opt/bin/minio server /data --console-address ':9001'
+    labels:
+    - "traefik.enable=true"
+    - "traefik.http.routers.minio.rule=Host(`minio.metrics.isvc`)"
+    - "traefik.http.routers.minio.entrypoints=web,websecure"
+    - "traefik.http.routers.minio.tls=true"
+    - "traefik.http.routers.minio.service=minio@docker"
+    - "traefik.http.services.minio.loadBalancer.server.port=9001"
+  
+  node_exporter:
+    image: quay.io/prometheus/node-exporter:latest
+    container_name: node_exporter
+    privileged: true
+    command:
+      - '--path.rootfs=/host'
+      - '--collector.arp'
+      - '--collector.cpu'
+      - '--collector.diskstats'
+      - '--collector.ethtool'
+      - '--collector.hwmon'
+      - '--collector.netdev'
+      - '--collector.sysctl'
+      - '--collector.systemd'
+    # ports:
+    #   - 9100:9100
+    network_mode: host
+    pid: host
+    restart: unless-stopped
+    cap_add:
+      - "SYS_TIME"
+    volumes:
+      - '/:/host:ro,rslave'
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.47.0 
+    container_name: cadvisor
+    hostname: cadvisor
+    privileged: true
+    # ports:
+    #   - 8080:8080
+    network_mode: host
+    restart: unless-stopped
+    devices:
+      - /dev/kmsg
+    volumes:
+      - /:/rootfs:ro 
+      - /var/run:/var/run:ro 
+      - /sys:/sys:ro 
+      - /var/lib/docker/:/var/lib/docker:ro 
+      - /dev/disk/:/dev/disk:ro 

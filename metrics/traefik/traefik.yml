@@ -1,0 +1,84 @@
+global:
+  checkNewVersion: true
+  sendAnonymousUsage: false
+
+serversTransport:
+  insecureSkipVerify: true
+  # rootCAs:
+  #   - foobar
+  #   - foobar
+  # maxIdleConnsPerHost: 42
+  # forwardingTimeouts:
+  #   dialTimeout: 42s
+  #   responseHeaderTimeout: 42s
+  #   idleConnTimeout: 42s
+entryPoints:
+  web:
+    address: ":80"
+    # http:
+    #   redirections:
+    #     entryPoint:
+    #       to: websecure
+    #       scheme: https
+
+
+
+  websecure:
+      address: ":443"
+
+  metrics:
+      address: ":8083"
+
+providers:
+  providersThrottleDuration: 42s
+  docker:
+    endpoint: "unix:///var/run/docker.sock"
+    exposedByDefault: false
+    watch: true
+    
+  # file:
+  #   directory: config/
+  #   watch: true
+  #   debugLogGeneratedTemplate: true
+ 
+api:
+  insecure: true
+  dashboard: true
+  debug: true
+
+metrics:
+  prometheus:
+    addEntryPointsLabels: true
+    addRoutersLabels: true
+    addServicesLabels: true
+    entryPoint: metrics
+
+# :8083/ping  
+ping:
+  entryPoint: metrics
+
+log:
+  level: INFO # DEBUG, INFO, WARN, ERROR, FATAL, and PANIC
+  filePath: "/logs/traefik.log"
+  format: json
+accessLog:
+  filePath: "/logs/traefik_access.log"
+  format: json
+  filters:
+    statusCodes:
+      - "400-404"
+      - "300-302"
+      - "500"
+    retryAttempts: true
+    minDuration: "10ms"
+  # fields:
+  #   defaultMode: foobar
+  #   names:
+  #     name0: foobar
+  #     name1: foobar
+  #   headers:
+  #     defaultMode: foobar
+  #     names:
+  #       name0: foobar
+  #       name1: foobar
+# 

@@ -1,0 +1,202 @@
+[
+    {
+      "timestamp": "2023-07-25 21:46:09,992",
+      "level": "error",
+      "message": "healthcheck called",
+      "path": "/app/application/matrixLogger/logger.py",
+      "lineNumber": 0,
+      "module": "logger",
+      "traceId": "test0",
+      "sessionId": "test0"
+    },
+    {
+      "timestamp": "2023-07-25 21:46:09,992",
+      "level": "info",
+      "message": "healthcheck called",
+      "path": "/app/application/matrixLogger/logger.py",
+      "lineNumber": 139,
+      "module": "logger",
+      "traceId": "test0",
+      "sessionId": "test0"
+    },
+    {
+      "timestamp": "2023-07-25 21:46:10,060",
+      "level": "info",
+      "message": "healthcheck called",
+      "path": "/app/application/matrixLogger/logger.py",
+      "lineNumber": 0,
+      "module": "logger",
+      "traceId": "test1",
+      "sessionId": "test1"
+    },
+    {
+      "timestamp": "2023-07-25 21:46:10,060",
+      "level": "info",
+      "message": "healthcheck called",
+      "path": "/app/application/matrixLogger/logger.py",
+      "lineNumber": 139,
+      "module": "logger",
+      "traceId": "test1",
+      "sessionId": "test1"
+    },
+    {
+      "timestamp": "2023-07-25 21:46:10,147",
+      "level": "info",
+      "message": "healthcheck called",
+      "path": "/app/application/matrixLogger/logger.py",
+      "lineNumber": 0,
+      "module": "logger",
+      "traceId": "test2",
+      "sessionId": "test2"
+    },
+    {
+      "timestamp": "2023-07-25 21:46:10,147",
+      "level": "info",
+      "message": "healthcheck called",
+      "path": "/app/application/matrixLogger/logger.py",
+      "lineNumber": 139,
+      "module": "logger",
+      "traceId": "test2",
+      "sessionId": "test2"
+    },
+    {
+      "timestamp": "2023-07-25 21:46:10,236",
+      "level": "info",
+      "message": "healthcheck called",
+      "path": "/app/application/matrixLogger/logger.py",
+      "lineNumber": 0,
+      "module": "logger",
+      "traceId": "test3",
+      "sessionId": "test3"
+    },
+    {
+      "timestamp": "2023-07-25 21:46:10,236",
+      "level": "info",
+      "message": "healthcheck called",
+      "path": "/app/application/matrixLogger/logger.py",
+      "lineNumber": 139,
+      "module": "logger",
+      "traceId": "test3",
+      "sessionId": "test3"
+    },
+    {
+      "timestamp": "2023-07-25 21:46:10,324",
+      "level": "info",
+      "message": "healthcheck called",
+      "path": "/app/application/matrixLogger/logger.py",
+      "lineNumber": 0,
+      "module": "logger",
+      "traceId": "test4",
+      "sessionId": "test4"
+    },
+    {
+      "timestamp": "2023-07-25 21:46:10,324",
+      "level": "info",
+      "message": "healthcheck called",
+      "path": "/app/application/matrixLogger/logger.py",
+      "lineNumber": 139,
+      "module": "logger",
+      "traceId": "test4",
+      "sessionId": "test4"
+    },
+    {
+      "timestamp": "2023-07-25 21:46:10,410",
+      "level": "info",
+      "message": "healthcheck called",
+      "path": "/app/application/matrixLogger/logger.py",
+      "lineNumber": 0,
+      "module": "logger",
+      "traceId": "test5",
+      "sessionId": "test5"
+    },
+    {
+      "timestamp": "2023-07-25 21:46:10,410",
+      "level": "info",
+      "message": "healthcheck called",
+      "path": "/app/application/matrixLogger/logger.py",
+      "lineNumber": 139,
+      "module": "logger",
+      "traceId": "test5",
+      "sessionId": "test5"
+    },
+    {
+      "timestamp": "2023-07-25 21:46:10,498",
+      "level": "info",
+      "message": "healthcheck called",
+      "path": "/app/application/matrixLogger/logger.py",
+      "lineNumber": 0,
+      "module": "logger",
+      "traceId": "test6",
+      "sessionId": "test6"
+    },
+    {
+      "timestamp": "2023-07-25 21:46:10,498",
+      "level": "info",
+      "message": "healthcheck called",
+      "path": "/app/application/matrixLogger/logger.py",
+      "lineNumber": 139,
+      "module": "logger",
+      "traceId": "test6",
+      "sessionId": "test6"
+    },
+    {
+      "timestamp": "2023-07-25 21:46:10,586",
+      "level": "info",
+      "message": "healthcheck called",
+      "path": "/app/application/matrixLogger/logger.py",
+      "lineNumber": 0,
+      "module": "logger",
+      "traceId": "test7",
+      "sessionId": "test7"
+    },
+    {
+      "timestamp": "2023-07-25 21:46:10,586",
+      "level": "info",
+      "message": "healthcheck called",
+      "path": "/app/application/matrixLogger/logger.py",
+      "lineNumber": 139,
+      "module": "logger",
+      "traceId": "test7",
+      "sessionId": "test7"
+    },
+    {
+      "timestamp": "2023-07-25 21:46:10,687",
+      "level": "warn",
+      "message": "healthcheck called",
+      "path": "/app/application/matrixLogger/logger.py",
+      "lineNumber": 0,
+      "module": "logger",
+      "traceId": "test8",
+      "sessionId": "test8"
+    },
+    {
+      "timestamp": "2023-07-25 21:46:10,687",
+      "level": "info",
+      "message": "healthcheck called",
+      "path": "/app/application/matrixLogger/logger.py",
+      "lineNumber": 139,
+      "module": "logger",
+      "traceId": "test8",
+      "sessionId": "test8"
+    },
+    {
+      "timestamp": "2023-07-25 21:46:10,799",
+      "level": "debug",
+      "message": "healthcheck called",
+      "path": "/app/application/matrixLogger/logger.py",
+      "lineNumber": 0,
+      "module": "logger",
+      "traceId": "test9",
+      "sessionId": "test9"
+    },
+    {
+      "timestamp": "2023-07-25 21:46:10,799",
+      "level": "debug",
+      "message": "healthcheck called",
+      "path": "/app/application/matrixLogger/logger.py",
+      "lineNumber": 139,
+      "module": "logger",
+      "traceId": "test9",
+      "sessionId": "test9"
+    }
+  ]
